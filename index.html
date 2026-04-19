@@ -456,9 +456,26 @@ async function syncData() {
         const st = (t.status?.status||'').toLowerCase();
         const isTmpl = t.name.toLowerCase().includes('[template]');
         const ignored = IGNORE_STATUS.some(s => st.includes(s));
-        // Verifica se Ariela é responsável
-        const isAssigned = (t.assignees||[]).some(a => a.id === MEMBER_ID || String(a.id) === String(MEMBER_ID));
-        return !isTmpl && !ignored && !t.parent && isAssigned;
+        if(isTmpl || ignored || t.parent) return false;
+
+        // Verifica assignees (todos os formatos possíveis)
+        const assignees = t.assignees || [];
+        const isAssigned = assignees.some(a =>
+          String(a.id) === String(MEMBER_ID) ||
+          (a.username||'').toLowerCase().includes('ariela') ||
+          (a.username||'').toLowerCase().includes('cruz') ||
+          (a.email||'').toLowerCase().includes('ariela')
+        );
+        const isCreator = String(t.creator?.id) === String(MEMBER_ID) ||
+          (t.creator?.username||'').toLowerCase().includes('ariela');
+
+        if(isAssigned || isCreator) return true;
+
+        // Log pra debug
+        if(assignees.length > 0) {
+          console.log('['+client+']', t.name, '→ assignees:', assignees.map(a=>a.id+':'+a.username));
+        }
+        return false;
       });
 
       for(const task of tasks) {
