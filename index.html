@@ -365,8 +365,8 @@ const ALL_LISTS = {
   'Andirá Jeans':'901324614041','Amiche':'901324613220','Del Carmen':'901324614474',
   'Doce Caju':'901324614721','Eloah':'901324682275','Flora Minha':'901324682301',
   'Kyrefh Jeans':'901324682326','Marry Blue':'901324682343','Nina & Noz':'901324682520',
-  'Sun Liv':'901324682532','Naromo':'901324682471','Tchu Bi':'901324505493',
-  'Aya':'901326685391'
+  'Naromo':'901324682471','Tchu Bi':'901324505493',
+  'Aya':'901326685391','Jenni Pink':'901326911788'
 };
 
 const IGNORE_STATUS = ['agendamento','concluído','concluido','done','complete','closed'];
@@ -472,9 +472,8 @@ async function syncData() {
         if(isAssigned || isCreator) return true;
 
         // Log pra debug
-        if(assignees.length > 0) {
-          console.log('['+client+']', t.name, '→ assignees:', assignees.map(a=>a.id+':'+a.username));
-        }
+        // Log de todas as tarefas com assignees para debug
+        console.log('['+client+'] TASK:', t.name, '| assignees:', JSON.stringify(assignees.map(a=>({id:a.id,user:a.username,email:a.email}))));
         return false;
       });
 
