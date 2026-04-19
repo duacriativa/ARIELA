@@ -448,16 +448,21 @@ async function syncData() {
 
   const promises = Object.entries(ALL_LISTS).map(async ([client, listId]) => {
     try {
-      const data = await api(`/list/${listId}/task?assignees[]=${MEMBER_ID}&subtasks=true&include_closed=false`);
-      const tasks = (data.tasks||[]).filter(t => {
+      // Busca todas as tarefas da lista (sem filtro de assignee — filtramos no JS)
+      const data = await api(`/list/${listId}/task?subtasks=true&include_closed=false`);
+      const allTasks = data.tasks || [];
+
+      const tasks = allTasks.filter(t => {
         const st = (t.status?.status||'').toLowerCase();
         const isTmpl = t.name.toLowerCase().includes('[template]');
         const ignored = IGNORE_STATUS.some(s => st.includes(s));
-        return !isTmpl && !ignored && !t.parent;
+        // Verifica se Ariela é responsável
+        const isAssigned = (t.assignees||[]).some(a => a.id === MEMBER_ID || String(a.id) === String(MEMBER_ID));
+        return !isTmpl && !ignored && !t.parent && isAssigned;
       });
 
       for(const task of tasks) {
-        const subtasks = (data.tasks||[]).filter(t =>
+        const subtasks = allTasks.filter(t =>
           t.parent === task.id &&
           !IGNORE_STATUS.some(s => (t.status?.status||'').toLowerCase().includes(s))
         );
